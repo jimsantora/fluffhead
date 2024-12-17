@@ -15,9 +15,7 @@ def get_config():
         default="config/default_config.yaml",
         help="Path to config file",
     )
-    parser.add_argument(
-        "--pretrained_model", type=str, help="Override pretrained model path"
-    )
+    parser.add_argument("--pretrained_model", type=str, help="Override pretrained model path")
     parser.add_argument("--dataset_path", type=str, help="Override dataset path")
     args = parser.parse_args()
 
@@ -39,12 +37,10 @@ def main():
 
     print("Preparing dataset...")
     dataset = prepare_dataset(config["dataset_path"])
-    dataloader = DataLoader(dataset, batch_size=config["batch_size"], shuffle=True)
+    dataloader = DataLoader(dataset["train"], batch_size=config["batch_size"], shuffle=True)
 
     print("Loading model and optimizer...")
-    pipeline, optimizer = setup_model_and_optimizer(
-        config["pretrained_model"], config["learning_rate"]
-    )
+    pipeline, optimizer = setup_model_and_optimizer(config["pretrained_model"], config["learning_rate"])
 
     Path(config["output_dir"]).mkdir(exist_ok=True)
 

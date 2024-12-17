@@ -6,7 +6,7 @@ import tempfile
 import shutil
 from PIL import Image
 import numpy as np
-from unittest.mock import Mock, patch
+from unittest.mock import patch, MagicMock
 from dataclasses import dataclass
 
 from src.dataset import prepare_dataset
@@ -29,9 +29,7 @@ class TestSDXLTraining:
 
         # Create 3 random test images
         for i in range(3):
-            img = Image.fromarray(
-                np.random.randint(0, 255, (512, 512, 3), dtype=np.uint8)
-            )
+            img = Image.fromarray(np.random.randint(0, 255, (512, 512, 3), dtype=np.uint8))
             img.save(temp_dir / f"test_{i}.jpg")
 
         yield str(temp_dir)
@@ -39,14 +37,14 @@ class TestSDXLTraining:
 
     @pytest.fixture
     def mock_pipeline(self):
-        mock = Mock()
+        mock = MagicMock()
 
         # Create a mock UNet that returns proper output structure
         def mock_forward(x):
             output = torch.nn.Conv2d(3, 1, 3, padding=1)(x)
             return MockUNetOutput(sample=output, loss=torch.tensor(0.5, device="mps"))
 
-        mock.unet = Mock()
+        mock.unet = MagicMock()
         mock.unet.__call__ = mock_forward
         mock.unet.parameters = lambda: [torch.nn.Parameter(torch.randn(1))]
         mock.device = torch.device("mps")
@@ -54,7 +52,7 @@ class TestSDXLTraining:
         # Mock save_pretrained to create the directory
         def mock_save_pretrained(path):
             Path(path).mkdir(parents=True, exist_ok=True)
-            
+
         mock.save_pretrained = mock_save_pretrained
         return mock
 
@@ -74,9 +72,7 @@ class TestSDXLTraining:
             "diffusers.StableDiffusionXLPipeline.from_pretrained",
             return_value=mock_pipeline,
         ):
-            pipeline, optimizer = setup_model_and_optimizer(
-                "dummy_path", learning_rate=1e-5
-            )
+            pipeline, optimizer = setup_model_and_optimizer("dummy_path", learning_rate=1e-5)
 
             # Basic pipeline checks
             assert pipeline.device.type == "mps"
@@ -86,7 +82,10 @@ class TestSDXLTraining:
             assert isinstance(optimizer, torch.optim.AdamW)
             assert optimizer.param_groups[0]["lr"] == 1e-5
 
-    def test_minimal_training_run(self, sample_dataset, mock_pipeline):
+    @patch("wandb.init")
+    @patch("wandb.log")
+    def test_minimal_training_run(self, mock_wandb_log, mock_wandb_init, sample_dataset, mock_pipeline):
+        mock_wandb_init.return_value = MagicMock()
         # Setup minimal training config
         config = {
             "batch_size": 1,
@@ -104,12 +103,8 @@ class TestSDXLTraining:
         ):
             # Prepare components
             dataset = prepare_dataset(sample_dataset)
-            dataloader = torch.utils.data.DataLoader(
-                dataset["test"], batch_size=config["batch_size"]
-            )
-            pipeline, optimizer = setup_model_and_optimizer(
-                "dummy_path", config["learning_rate"]
-            )
+            dataloader = torch.utils.data.DataLoader(dataset["test"], batch_size=config["batch_size"])
+            pipeline, optimizer = setup_model_and_optimizer("dummy_path", config["learning_rate"])
 
             # Run training
             try:

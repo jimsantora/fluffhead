@@ -17,5 +17,7 @@ setup(
         "pytest-mock",
         "pillow",  # for image processing
         "numpy",
+        "wandb",  # for experiment tracking
+        "psutil",  # for system resource monitoring
     ],
 )
