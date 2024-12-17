@@ -1,0 +1,8 @@
+pretrained_model: null  # Required via CLI or config override
+dataset_path: null      # Required via CLI or config override
+output_dir: "./output"
+batch_size: 1
+learning_rate: 5.0e-6
+num_epochs: 1
+max_train_steps: 1000
+use_mixed_precision: false

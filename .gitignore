@@ -1,0 +1,58 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+*.egg
+dist/
+build/
+eggs/
+parts/
+var/
+wheels/
+*.manifest
+*.spec
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.env
+.venv
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# ML specific
+checkpoints/
+runs/
+output/
+wandb/
+lightning_logs/
+*.ckpt
+*.pth
+*.pt
+*.onnx
+*.h5
+
+# Project specific
+config/*
+!config/default_config.yaml
+data/*
+!data/.gitkeep
+
+# Logs and databases
+*.log
+*.sqlite
+*.db
+
+# Local development
+.python-version
+.env.local
+*.local
